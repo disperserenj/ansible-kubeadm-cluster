@@ -17,6 +17,9 @@
 - name: Control plane init
   ansible.builtin.import_tasks: control_plane_init.yml
 
+- name: Install Calico CNI
+  ansible.builtin.import_tasks: cni_calico.yml
+
 - name: Join nodes
   ansible.builtin.import_tasks: join.yml
 

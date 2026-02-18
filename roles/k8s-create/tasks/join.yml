@@ -23,6 +23,31 @@
   when:
     - inventory_hostname in groups['masters']
     - inventory_hostname != groups['masters'][0]
+- name: Get join command for workers
+  command: kubeadm token create --print-join-command
+  register: join_worker
+  run_once: true
+  delegate_to: "{{ groups['masters'][0] }}"
+
+- name: Upload certs and get certificate key
+  command: kubeadm init phase upload-certs --upload-certs
+  register: cert_key
+  run_once: true
+  delegate_to: "{{ groups['masters'][0] }}"
+
+- name: Get join command for control-plane
+  command: kubeadm token create --print-join-command --certificate-key {{ cert_key.stdout_lines[-1] }}
+  register: join_master
+  run_once: true
+  delegate_to: "{{ groups['masters'][0] }}"
+
+- name: Check if master already joined
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: master_kubelet_conf
+  when:
+    - inventory_hostname in groups['masters']
+    - inventory_hostname != groups['masters'][0]
 
 - name: Join master nodes
   command: "{{ join_master.stdout }} --control-plane"
@@ -30,3 +55,18 @@
     - inventory_hostname in groups['masters']
     - inventory_hostname != groups['masters'][0]
     - not master_kubelet_conf.stat.exists
+
+
+- name: Check if kubelet config exists
+  stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubelet_conf
+  when: inventory_hostname in groups['workers']
+
+- name: Join worker nodes
+  command: "{{ join_worker.stdout }}"
+  when:
+    - inventory_hostname in groups['workers']
+    - not kubelet_conf.stat.exists
+
+  

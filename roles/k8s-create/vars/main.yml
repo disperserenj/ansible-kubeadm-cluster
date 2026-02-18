@@ -1,0 +1,4 @@
+k8s_repo_url: "https://pkgs.k8s.io/core:/stable:/v1.35/deb/"
+k8s_key_url: "{{ k8s_repo_url }}Release.key"
+keyring_path: "/etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+local_kubeconfig_path: "/home/disperser/.kube/config"

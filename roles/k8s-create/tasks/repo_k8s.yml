@@ -1,0 +1,43 @@
+- name: "Update apt cache"
+  apt:
+    update_cache: yes
+
+- name: "Download packages"
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+
+- name: "Создать директорию для ключей репозиториев"
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: "Скачать и установить GPG ключ Kubernetes"
+  shell: |
+    curl -fsSL {{ k8s_key_url }} | gpg --dearmor -o {{ keyring_path }}
+  args:
+    creates: "{{ keyring_path }}"
+
+- name: "Добавить репозиторий Kubernetes"
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /"
+    state: present
+    filename: kubernetes
+    update_cache: yes
+  register: repo_added
+
+- name: "Проверить наличие репозитория"
+  shell: grep -r "pkgs.k8s.io" /etc/apt/sources.list.d/ 2>/dev/null || true
+  register: repo_check
+  changed_when: false
+
+- name: "Вывести информацию о репозитории"
+  debug:
+    msg: "Репо Kubernetes {{ 'добавлен' if repo_check.stdout else 'отсутствует' }}"

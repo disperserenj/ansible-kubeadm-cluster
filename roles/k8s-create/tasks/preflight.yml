@@ -1,0 +1,16 @@
+- name: "Disable swap (runtime)"
+  command: swapoff -a
+  when: ansible_swaptotal_mb > 0
+
+- name: Disable swap in fstab
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*\s+swap\s+)'
+    replace: '# \1'
+
+- name: "Disable UFW firewall"
+  service:
+    name: ufw
+    state: stopped
+    enabled: no
+  when: ansible_os_family == "Debian"

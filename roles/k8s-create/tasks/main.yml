@@ -1,0 +1,24 @@
+---
+- name: Preflight
+  ansible.builtin.import_tasks: preflight.yml
+
+- name: Kubernetes repo
+  ansible.builtin.import_tasks: repo_k8s.yml
+
+- name: Containerd
+  ansible.builtin.import_tasks: containerd.yml
+
+- name: K8s packages
+  ansible.builtin.import_tasks: k8s_packages.yml
+
+- name: Sysctl & kernel
+  ansible.builtin.import_tasks: sysctl.yml
+
+- name: Control plane init
+  ansible.builtin.import_tasks: control_plane_init.yml
+
+- name: Join nodes
+  ansible.builtin.import_tasks: join.yml
+
+- name: Fetch kubeconfig
+  ansible.builtin.import_tasks: kubeconfig_fetch.yml

@@ -1,0 +1,21 @@
+- name: "Download packages"
+  apt:
+    name:
+      - kubectl
+      - kubeadm
+      - kubelet 
+    state: present
+- name: "Hold Kubernetes packages"
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Enable kubelet
+  service:
+    name: kubelet
+    state: started
+    enabled: yes
